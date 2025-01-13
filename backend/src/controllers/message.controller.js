@@ -1,4 +1,5 @@
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 
@@ -27,6 +28,7 @@ export const getMessages = async (req, res) => {
         { senderId: userToChatId, receiverId: myId },
       ],
     });
+    console.log("this is get message ->", messages);
 
     res.status(200).json(messages);
   } catch (error) {
@@ -55,11 +57,16 @@ export const sendMessage = async (req, res) => {
       image: imageUrl,
     });
 
-    await newMessage.save();
+    const message = await newMessage.save();
 
-    // todo: realtime functionality goes here using socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", message);
+    }
 
-    res.status(200).json(newMessage);
+    console.log("THis is under send message => ", message);
+
+    res.status(200).json(message);
   } catch (error) {
     console.log("Error in sendMessage Controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
