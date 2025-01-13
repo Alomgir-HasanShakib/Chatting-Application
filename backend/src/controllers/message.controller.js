@@ -9,7 +9,7 @@ export const getUsersForSidebar = async (req, res) => {
       _id: { $ne: loggedInUserId },
     }).select("-password");
 
-    resizeBy.status(200).json(filteredUsers);
+    res.status(200).json(filteredUsers);
   } catch (error) {
     console.log("Error in getUserForSidebar controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
